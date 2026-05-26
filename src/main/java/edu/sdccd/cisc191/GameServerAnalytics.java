@@ -1,4 +1,5 @@
 package edu.sdccd.cisc191;
+import java.util.stream.Stream;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,22 +39,18 @@ public class GameServerAnalytics {
                 Collectors.mapping(PlayerAccount::username, Collectors.toList())));
     }
 
-    public static Map<String, List<String>> buildRecentMatchSummariesByPlayer(Collection<MatchRecord> matches) {
-        // TODO: use a Map + collection logic or a stream-based approach
-        Map<String, List<String>> result = new java.util.HashMap<>();
+ public static Map<String, List<String>> buildRecentMatchSummariesByPlayer(Collection<MatchRecord> matches) {
+    return matches.stream()
+            .flatMap(m -> Stream.of(
+                    Map.entry(m.playerOne().username(), m.summary()),
+                    Map.entry(m.playerTwo().username(), m.summary())
+            ))
+            .collect(Collectors.groupingBy(
+                    Map.Entry::getKey,
+                    Collectors.mapping(Map.Entry::getValue, Collectors.toList())
+            ));
+}
 
-        for (MatchRecord match : matches) {
-            String summary = match.summary();
-
-            result.computeIfAbsent(
-                    match.playerOne().username(), k -> new java.util.ArrayList<>()).add(summary);
-
-            result.computeIfAbsent(
-                    match.playerTwo().username(), k -> new java.util.ArrayList<>()).add(summary);
-        }
-
-        return result;
-    }
 
     public static <T> T pickHigherRated(T first, T second, Comparator<T> comparator) {
         // TODO: implement using the comparator
